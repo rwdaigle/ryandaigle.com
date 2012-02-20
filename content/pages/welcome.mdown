@@ -1,5 +1,6 @@
 Title: Getting Started with the Nesta CMS App Template
-Date: February 20, 2012
+Date: December 20, 2012
+Flags: draft
 
 Welcome to [Nesta CMS](http://nestacms.com) and the [starter template](https://github.com/rwdaigle/nesta-app-template)/[clean theme](https://github.com/rwdaigle/nesta-app-template) by [Ryan Daigle](http://ryandaigle.com). Now that you've got the site running let's look at how to use it.
 

@@ -1,0 +1,6 @@
+Title: Site Relaunch
+Date: 08 February 2012
+
+I'm currently in the middle of putting a fresh coat of paint on RyanDaigle.com, the previous home of the [What's new in Edge Rails](http://edgerails.info) series. All old links to http://ryandaigle.com/articles will be redirected to an archived version of the site at [http://archives.ryandaigle.com](http://archives.ryandaigle.com). I doubt all links will make the change, but I've given it my best effort.
+
+Don't have any big plans for the site beyond a renewed effort at writing more. Stay tuned.
