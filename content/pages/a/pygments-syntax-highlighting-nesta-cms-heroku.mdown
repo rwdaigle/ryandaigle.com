@@ -63,12 +63,18 @@ The application's source is now installed locally in the `mysite.com` directory.
 Now that the site template is present in the local environment you can install required dependencies and render the site locally before deploying to a remote server environment. A `bootstrap.sh` script is provided for your convenience.
 
 <div class="note">
-The `bootstrap.sh` script does not use sudo or make any destructive commands. However, please review the script source before executing.
+The <code>bootstrap.sh</code> script does not use sudo or make any destructive commands. However, please review the script source before executing.
 </div>
 
 <pre lang='bash'><code>
 $ cat bootstrap.sh
-$ ./bootstrap
+# ... script source
+
+$ ./bootstrap.sh 
+Using RedCloth (4.2.9) 
+Using addressable (2.2.7) 
+# ...
+Submodule path 'themes/clean': checked out '889e094749008d2bf4ecf901555fce44c7f7bc87'
 </code></pre>
 
 Once bootstrap has finished start the app using the `foreman` utility.
@@ -85,15 +91,23 @@ Opening [http://localhost:5000](http://localhost:5000) should display the site r
 Assuming you have a Heroku account and have successfully installed the [Heroku Toolbelt](http://toolbelt.heroku.com) you can use the provided helper script to quickly deploy the site install any dependencies and setup the appropriate configuration.
 
 <div class="note">
-The app deployed to Heroku will not incur any charges on Heroku. The `deploy.sh` script does not use sudo or make any destructive commands. However, please review the script source before executing.
+The app deployed to Heroku will not incur any charges on Heroku. The <code>deploy.sh</code> script does not use sudo or make any destructive commands. However, please review the script source before executing.
 </div>
 
 <pre lang='bash'><code>
 $ cat deploy.sh
-$ ./deploy.sh
+# ...script source
+
+$ ./deploy.sh 
+Creating vivid-sword-9170... done, stack is cedar
+Adding memcache to vivid-sword-9170... done
+# ...
+Opening http://vivid-sword-9170.herokuapp.com/
 </code></pre>
 
-## Write
+## Next steps
+
+Point to welcome post...
 
 ## Options
 
