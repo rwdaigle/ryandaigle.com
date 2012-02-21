@@ -11,12 +11,7 @@ See this blog post for full background, installation and usage details: [http://
 Fork this repo on GitHub and clone locally to get the source on your local environment. Then run:
 
 ```term
-$ bundle install
-Fetching git://github.com/krohrbaugh/rack-pygmoku.git
-remote: Counting objects: 90, done.
-...
-Using bundler (1.0.15) 
-Your bundle is complete! Use `bundle show [gemname]` to see where a bundled gem is installed.
+$ ./bootstrap.sh
 
 $ foreman start
 14:25:47 web.1     | started with pid 59647
