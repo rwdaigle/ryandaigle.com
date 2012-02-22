@@ -5,10 +5,10 @@ Flags: draft
 As seems to be tradition amongst the Nerderati it's common to explain the particulars of your blogging setup anytime there's a change. Today is such an occasion. After a significant hiatus of any meaningful writing I've decided it's time to get back on the saddle.
 
 <p class="note">
-If you're not much for foreplay a fully deployable version of this site can be found at <a href="http://github.com/rwdaigle">http://github.com/rwdaigle</a>.
+If you're not much for foreplay a fully deployable starter template of this site can be found at <a href="http://github.com/rwdaigle/nesta-app-template">http://github.com/rwdaigle/nesta-app-template</a> and is live at <a href="http://glowing-robot-5990.herokuapp.com/">http://glowing-robot-5990.herokuapp.com/</a>.
 </p>
 
-## Requirements
+## Background
 
 Having wrestled with quite a few blogging engines in the past I had several requirements of a new setup. Firstly it had to support a workflow that lets me write on my local machine using the tools I prefer, namely [markdown formatted articles](http://daringfireball.net/projects/markdown/) composed with [IA Writer](http://www.iawriter.com/) or a basic text editor.
 
@@ -18,13 +18,13 @@ Static site generators are all the rage and fulfill the first two requirements. 
 
 Fortunately, there's a better way.
 
-## Choices
+## Landscape
 
 The list of dynamic file-backed Heroku-friendly blog engines isn't particularly long. I investigated both [Toto](http://cloudhead.io/toto) and [Nesta CMS](http://nestacms.com/) and, after a brief wrestle trying to get Toto's HTTP request headers to play nice with rack-cache, settled on Nesta. Nesta is under active development and is written with Sinatra, the very simple and hackable web framework for Ruby.
 
 For deployment [Heroku](http://heroku.com) is the obvious choice given its seamless git-based workflow and variety of [add-ons](http://addons.heroku.com). I also work there.
 
-## Overview
+## Benefits
 
 Deploying a Nesta backed blog to Heroku is quite simple. However, you don't just want a stock setup. You have to take into account proper asset caching for performance, slick syntax highlighting, an aesthetically pleasing theme, app instrumentation, feed redirection and production deployment. I've gone ahead and boiled down all these concerns into just a few steps.
 
@@ -32,7 +32,7 @@ Deploying a Nesta backed blog to Heroku is quite simple. However, you don't just
 These steps assume you have <a href="http://git-scm.com/">git</a> and <a href="http://www.ruby-lang.org/en/">ruby</a> available from the command line and have already signed up for a <a href="https://api.heroku.com/signup">Heroku account</a>. The <a href="http://toolbelt.heroku.com/">Heroku Toolbelt</a> can get you up and running if you're missing any components.
 </p>
 
-## Clone starter app
+## Template
 
 Though the [Nesta quick-start](http://nestacms.com/docs/quick-start) is solid, as are all their docs, we can skip ahead by using an app template. I've created one [on github](https://github.com/rwdaigle/nesta-app-template) that's already setup for syntax highlighting with [Pygments](http://pygments.org/), the ["clean" theme](https://github.com/rwdaigle/nesta-theme-clean) you see running this site and the minimal artefacts needed to quickly deploy and provision a full-featured Heroku app.
 
@@ -58,7 +58,7 @@ Resolving deltas: 100% (29/29), done.
 
 The application's source is now installed locally in the `mysite.com` directory.
 
-## Run Nesta
+## Run
 
 Now that the site template is present in the local environment you can install required dependencies and render the site locally before deploying to a remote server environment. A `bootstrap.sh` script is provided for your convenience.
 
@@ -86,7 +86,7 @@ $ foreman start
 
 Opening [http://localhost:5000](http://localhost:5000) should display the site running with a single getting started article listed on the home page. Any errors that occur will be shown in the terminal where you entered the `foreman start` command.
 
-## Deploy to Heroku
+## Deploy
 
 Assuming you have a Heroku account and have successfully installed the [Heroku Toolbelt](http://toolbelt.heroku.com) you can use the provided helper script to quickly deploy the site install any dependencies and setup the appropriate configuration.
 
@@ -105,7 +105,7 @@ Adding memcache to vivid-sword-9170... done
 Opening http://vivid-sword-9170.herokuapp.com/
 </code></pre>
 
-## Next steps
+## Next
 
 Point to welcome post...
 
