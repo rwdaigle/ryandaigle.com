@@ -1,9 +1,4 @@
 module Nesta
-  class App
-
-    configure :production do
-      require 'newrelic_rpm'
-    end
-    
+  class App    
   end
 end

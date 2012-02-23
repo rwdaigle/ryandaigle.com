@@ -1,10 +1,11 @@
 Title: Deploying a Nesta CMS Blog with Pygments Syntax Highlighting to Heroku
+Date: February 22, 2012
 Flags: draft
 
 As seems to be tradition amongst the Nerderati it's common to explain the particulars of your blogging setup anytime there's a change. Today is such an occasion. After a significant hiatus of any meaningful writing I've decided it's time to get back on the saddle.
 
 <p class="note">
-If you're not much for foreplay a fully deployable starter template of this site (built w/ <a href="http://nestacms.com">Nesta CMS</a>) can be found <a href="http://github.com/rwdaigle/nesta-app-template">here on GitHub</a> and seen running <a href="http://glowing-robot-5990.herokuapp.com/">here on Heroku</a>.
+If you're not much for foreplay a fully deployable starter template of this site (built w/ <a href="http://nestacms.com">Nesta CMS</a>) can be found <a href="http://github.com/rwdaigle/nesta-app-template">here on GitHub</a> and seen running <a href="http://nesta-app-template.herokuapp.com/">here on Heroku</a>.
 </p>
 
 ## Background
@@ -106,7 +107,7 @@ Opening http://vivid-sword-9170.herokuapp.com/
 
 ## Next
 
-You've forked your own copy of the app template, got it running locally and deployed it for free to Heroku. Not bad for a few minutes of your time! To customize the site, setup analytics and write your first post go ahead and read the welcome post included in your new site (a copy can be found [here](http://glowing-robot-5990.herokuapp.com/welcome)). 
+You've forked your own copy of the app template, got it running locally and deployed it for free to Heroku. Not bad for a few minutes of your time! To customize the site, setup analytics and write your first post go ahead and read the welcome post included in your new site (a copy can be found [here](http://nesta-app-template.herokuapp.com/welcome)). 
 
 ![Welcome post screenshot](http://cl.ly/ESq1/Screen%20Shot%202012-02-22%20at%207.57.40%20PM.png)
 
