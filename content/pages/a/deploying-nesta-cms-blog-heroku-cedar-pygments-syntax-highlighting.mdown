@@ -1,6 +1,5 @@
 Title: Deploying a Nesta CMS Blog with Pygments Syntax Highlighting to Heroku
 Date: February 22, 2012
-Flags: draft
 
 Blogging and/or setting up a simple site should be a simple proposition. There are a lot of great frameworks out there that handle the software portion of running such a site. However, you don't just want a stock setup. You have to take into account proper asset caching for performance, slick syntax highlighting, an aesthetically pleasing theme, app instrumentation, feed redirection and production deployment.
 

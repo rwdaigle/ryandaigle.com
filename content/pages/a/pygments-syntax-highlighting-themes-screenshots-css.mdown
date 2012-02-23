@@ -1,2 +1,0 @@
-Title: Pygments Syntax Highlighting Theme Screenshots and CSS
-Flags: draft
