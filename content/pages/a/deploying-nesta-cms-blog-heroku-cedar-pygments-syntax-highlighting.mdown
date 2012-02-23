@@ -1,11 +1,10 @@
 Title: Deploying a Nesta CMS Blog with Pygments Syntax Highlighting to Heroku
-Date: December 31, 2012
 Flags: draft
 
 As seems to be tradition amongst the Nerderati it's common to explain the particulars of your blogging setup anytime there's a change. Today is such an occasion. After a significant hiatus of any meaningful writing I've decided it's time to get back on the saddle.
 
 <p class="note">
-If you're not much for foreplay a fully deployable starter template of this site can be found at <a href="http://github.com/rwdaigle/nesta-app-template">http://github.com/rwdaigle/nesta-app-template</a> and is live at <a href="http://glowing-robot-5990.herokuapp.com/">http://glowing-robot-5990.herokuapp.com/</a>.
+If you're not much for foreplay a fully deployable starter template of this site (built w/ <a href="http://nestacms.com">Nesta CMS</a>) can be found <a href="http://github.com/rwdaigle/nesta-app-template">here on GitHub</a> and seen running <a href="http://glowing-robot-5990.herokuapp.com/">here on Heroku</a>.
 </p>
 
 ## Background
@@ -38,7 +37,7 @@ Though the [Nesta quick-start](http://nestacms.com/docs/quick-start) is solid, a
 
 Fork the starter template using the "Fork" button on the [template GitHub page](https://github.com/rwdaigle/nesta-app-template).
 
-![Fork starter template screenshot](http://f.cl.ly/items/1m1d0P0e362W0L0G1s12/fork.png)
+![Fork starter template screenshot](http://f.cl.ly/items/2g1E2H1n0X0T3y0v3S2K/Screen%20Shot%202012-02-22%20at%207.43.19%20PM.png)
 
 This will fork it to your GitHub account. From there you can clone your fork locally. Find the repository URL for your fork and copy it (your URL will differ from the one shown below).
 
@@ -91,12 +90,12 @@ Opening [http://localhost:5000](http://localhost:5000) should display the site r
 Assuming you have a Heroku account and have successfully installed the [Heroku Toolbelt](http://toolbelt.heroku.com) you can use the provided helper script to quickly deploy the site install any dependencies and setup the appropriate configuration.
 
 <div class="note">
-The app deployed to Heroku will not incur any charges on Heroku. The <code>deploy.sh</code> script does not use sudo or make any destructive commands. However, please review the script source before executing.
+The app deployed to Heroku will not incur any charges on Heroku.
 </div>
 
 <pre lang='bash'><code>
 $ cat deploy.sh
-# ...script source
+# ... review script source ...
 
 $ ./deploy.sh 
 Creating vivid-sword-9170... done, stack is cedar
@@ -107,11 +106,8 @@ Opening http://vivid-sword-9170.herokuapp.com/
 
 ## Next
 
-Point to welcome post...
+You've forked your own copy of the app template, got it running locally and deployed it for free to Heroku. Not bad for a few minutes of your time! To customize the site, setup analytics and write your first post go ahead and read the welcome post included in your new site (a copy can be found [here](http://glowing-robot-5990.herokuapp.com/welcome)). 
 
-## Options
+![Welcome post screenshot](http://cl.ly/ESq1/Screen%20Shot%202012-02-22%20at%207.57.40%20PM.png)
 
-cache timeout
-heroku addons
-nesta themes
-pygments CSS
+My hope is this template and theme eliminates many of the sticking points associated with taking a great framework like Nesta and turning it into a running, usable and deployed site. Let me know if you run into any issues (or better yet, submit a pull request to the template or theme projects on GitHub).

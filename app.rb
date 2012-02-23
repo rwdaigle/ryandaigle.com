@@ -4,6 +4,6 @@ module Nesta
     configure :production do
       require 'newrelic_rpm'
     end
-
+    
   end
 end
