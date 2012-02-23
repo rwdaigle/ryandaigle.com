@@ -2,10 +2,12 @@ Title: Deploying a Nesta CMS Blog with Pygments Syntax Highlighting to Heroku
 Date: February 22, 2012
 Flags: draft
 
-As seems to be tradition amongst the Nerderati it's common to explain the particulars of your blogging setup anytime there's a change. Today is such an occasion. After a significant hiatus of any meaningful writing I've decided it's time to get back on the saddle.
+Blogging and/or setting up a simple site should be a simple proposition. There are a lot of great frameworks out there that handle the software portion of running such a site. However, you don't just want a stock setup. You have to take into account proper asset caching for performance, slick syntax highlighting, an aesthetically pleasing theme, app instrumentation, feed redirection and production deployment.
+
+I've gone ahead and boiled down all these concerns into just a few steps based on the [Nesta CMS](http://nestacms.com) framework.
 
 <p class="note">
-If you're not much for foreplay a fully deployable starter template of this site (built w/ <a href="http://nestacms.com">Nesta CMS</a>) can be found <a href="http://github.com/rwdaigle/nesta-app-template">here on GitHub</a> and seen running <a href="http://nesta-app-template.herokuapp.com/">here on Heroku</a>.
+If you're not much for foreplay a fully deployable starter template of this site can be found <a href="http://github.com/rwdaigle/nesta-app-template">here on GitHub</a> and seen running <a href="http://nesta-app-template.herokuapp.com/">here on Heroku</a>.
 </p>
 
 ## Background
@@ -23,10 +25,6 @@ Fortunately, there's a better way.
 The list of dynamic file-backed Heroku-friendly blog engines isn't particularly long. I investigated both [Toto](http://cloudhead.io/toto) and [Nesta CMS](http://nestacms.com/) and, after a brief wrestle trying to get Toto's HTTP request headers to play nice with rack-cache, settled on Nesta. Nesta is under active development and is written with Sinatra, the very simple and hackable web framework for Ruby.
 
 For deployment [Heroku](http://heroku.com) is the obvious choice given its seamless git-based workflow and variety of [add-ons](http://addons.heroku.com). I also work there.
-
-## Benefits
-
-Deploying a Nesta backed blog to Heroku is quite simple. However, you don't just want a stock setup. You have to take into account proper asset caching for performance, slick syntax highlighting, an aesthetically pleasing theme, app instrumentation, feed redirection and production deployment. I've gone ahead and boiled down all these concerns into just a few steps.
 
 <p class="note">
 These steps assume you have <a href="http://git-scm.com/">git</a> and <a href="http://www.ruby-lang.org/en/">ruby</a> available from the command line and have already signed up for a <a href="https://api.heroku.com/signup">Heroku account</a>. The <a href="http://toolbelt.heroku.com/">Heroku Toolbelt</a> can get you up and running if you're missing any components.
