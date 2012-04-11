@@ -10,8 +10,6 @@ gem 'rack-pygmoku', :git => "git://github.com/krohrbaugh/rack-pygmoku.git"
 gem 'rubypython', '0.5.1'
 gem 'maruku'
 
-gem 'nesta-plugin-sluggable'
-
 group :development do
   gem 'heroku'
   gem 'foreman'
