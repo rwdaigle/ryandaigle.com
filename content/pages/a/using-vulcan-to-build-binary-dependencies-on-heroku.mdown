@@ -10,7 +10,7 @@ What remains unsolved is how to declare and manage system-level dependencies -- 
 This post will explore explicitly managing and building system-level dependencies using the [Vulcan](https://github.com/heroku/vulcan) build server.
 -->
 
-## The problem
+## Problem
 
 It's common for an application to shell out to a local executable to perform some computationally intense work where compiled libraries are more performant or robust. Some common examples include [Ghostscript](http://www.ghostscript.com/), which your application might use to manipulate PDF or PostScript files, or [ImageMagick](http://www.imagemagick.org/script/index.php) for resizing and cropping uploaded images.
 
@@ -20,7 +20,7 @@ Additionally, having the ability to install system-wide binaries in your deploym
 
 [Twelve-factor](http://www.12factor.net/) makes [the case](http://www.12factor.net/dependencies) to "not rely on the implicit existence of any system tools" for the deleterious effects it may have on future environment migration and upgrade efforts. Instead of solving system dependencies at a system level solve them at the application level by explicitly bundling binaries with the application that requires them.
 
-## Vulcan
+## Solution
 
 Bundling a binary dependency requires that the binary be built specifically for the remote environment's operating system and processor architecture. This is a non-trivial task when you're faced with having to boot up a local host-VM just to simulate the remote server environment. Even then the processor architecture may be in conflict.
 
@@ -220,50 +220,111 @@ $ cd /app/vendor/wget-1.13
 Many binaries were compiled in the course of writing this article for use on Heroku. Here is a list in case they're useful to you:
 
 <p class="note" markdown="1">
-If you'd like to list a binary compiled for Heroku here, please send a pull request [for this article]().
+If you'd like to list a Heroku binary here, please [send a pull request](https://github.com/rwdaigle/ryandaigle.com/blob/master/content/pages/a/using-vulcan-to-build-binary-dependencies-on-heroku.mdown).
 </p>
 
 <table>
   <tr>
     <th>Library</th>
-    <th>Source</th>
     <th>Build command</th>
     <th>Binary</th>
+    <th>Contributor</th>
   </tr>
   <tr>
-    <td><a href="http://www.gnu.org/software/wget/">GNU Wget</a> v1.13</td>
-    <td><a href="http://ftp.gnu.org/gnu/wget/wget-1.13.tar.gz">http://ftp.gnu.org/gnu/wget/wget-1.13.tar.gz</a></td>
-    <td><code>vulcan build -v -s ./wget-1.13 -c "./configure --prefix /app/vendor/wget-1.13 --without-ssl && make install" -p /app/vendor/wget-1.13</code>
-/vendor/wget-1.13</td>
-    <td><a href="http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz">http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz</a></td>
+    <td><a href="http://ftp.gnu.org/gnu/wget/wget-1.13.tar.gz">GNU Wget v1.13</a></td>
+    <td><code>vulcan build -v -s ./wget-1.13 -c "./configure --prefix /app/vendor/wget-1.13 --without-ssl &amp;&amp; make install" -p /app/vendor/wget-1.13</code></td>
+    <td><a href="http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz">download</a></td>
+    <td><a href="https://twitter.com/rwdaigle">Ryan Daigle</a></td>
+  </tr>
+  <tr>
+    <td><a href="http://www.imagemagick.org/download/ImageMagick.tar.gz">ImageMagick v6.7.8-1</a></td>
+    <td><code>vulcan build -v -s ./ImageMagick-6.7.8-1</code></td>
+    <td><a href="http://cl.ly/011m0E3w2I360X2s1D2d/ImageMagick-6.7.tgz">download</a></td>
+    <td><a href="https://twitter.com/rwdaigle">Ryan Daigle</a></td>
+  </tr>
+  <tr>
+    <td><a href="http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz">Ghostscript v9.05</a></td>
+    <td><code>vulcan build -v -s ./ghostscript-9.05</code></td>
+    <td><a href="http://cl.ly/192z2W1H2i1e3o0W341V/ghostscript-9.tgz">download</a></td>
+    <td><a href="https://twitter.com/rwdaigle">Ryan Daigle</a></td>
   </tr>
 </table>
 
-#### Notes
+## Updates
 
+Updating Vulcan is quite simple. Update the CLI using ruby gems:
 
+<pre lang="bash"><code>
+$ gem install vulcan
+Please run 'vulcan update' to update your build server.
+Successfully installed vulcan-0.8.0
+1 gem installed
+</code></pre>
 
-repo of Heroku builds
+And use the `vulcan update` command to update the build server.
 
-specify output dir -p /tmp/name w/ configure --prefix (must be writable on dyno)
+<p class="warning" markdown="1">
+Be aware that updating the build server while active compilations are running will cause them to be aborted.
+</p>
 
-Update w/ gem install vulcan && vulcan update
+<pre lang="bash"><code>
+$ vulcan update
+Initialized empty Git repository in /private/var/folders/tt/7f38d4b14qq5xglpj3yl0smr0000gn/T/d20120704-53816-m4n0rn/.git/
+Counting objects: 883, done.
+...
 
-If already have buildserver, 
+-----> Heroku receiving push
+-----> Node.js app detected
+-----> Resolving engine versions
+       Using Node.js version: 0.6.18
+       Using npm version: 1.1.4
+...
+-----> Launching... done, v15
+       http://buildserver-you.herokuapp.com deployed to Heroku
 
-In practice: switch between local dev and remote (using the bin/ env)
+To git@heroku.com:buildserver-you.git
+ + a5f27be...a934704 master -> master (forced update)
+</code></pre>
 
-[web.1]: [672b5df6-ad8c-49ed-9831-515207e2dc4f] ERROR: invalid secret
+## Troubleshooting
+
+### Invalid secret
+
+If working across multiple development environments or some other non-default workflow you may see the following build server error logged when attempting to invoke a build:
+
+<pre><code>
+2012-07-04T17:39:47+00:00 app[web.1]: [672b5df6-ad8c-49ed-9831-515207e2dc4f] ERROR: invalid secret
 2012-07-04T17:39:47+00:00 app[web.1]: invalid secret
-heroku config -s | grep SECRET
-~/.vulcan
+</code></pre>
+
+This occurs when the CLI secret hash, created when the build server was created with `vulcan create`, either doesn't exist or doesn't match the server-side secret. The most common cause is that the `~/.vulcan` configuration file doesn't exist in your environment. You can create it with the following contents:
+
+<h5 class="file">~/.vulcan</h5>
+<pre lang="yaml"><code>
 --- 
 :app: buildserver-you
 :host: buildserver-you.herokuapp.com
-:secret: f575054501266d29eac5fcf9d8811dfb846f2520
+:secret: reallylonghash12df
+</code></pre>
 
+If you don't have access to your original `.vulcan` file you can find your secret on Heroku using `heroku config`:
+
+<pre lang="bash"><code>
+$ heroku config:get SECRET -a buildserver-you
+reallylonghash12df
+</code></pre>
+
+<p class="note" markdown="1">
+Copy your `~/.vulcan` file to each development machine from which you wish to invoke builds.
+</p>
 
 <!--
+
+## Notes
+
+Vendoring/In practice: switch between local dev and remote (using the bin/ env)
+
+style table
 
 ## Dependencies
 
