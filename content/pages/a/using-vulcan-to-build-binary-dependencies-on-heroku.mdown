@@ -1,0 +1,290 @@
+Title: Using Vulcan to Build Binary Dependencies for Heroku
+Draft: true
+Date: 15 June, 2012
+
+Managing an application's code dependencies, which was once a source of constant pain and conflict, is now a solved problem in most modern languages. Ruby has [Bundler](http://gembundler.com/), Node.js has [npm](http://npmjs.org/), Python has [pip](http://pypi.python.org/pypi/pip), Clojure has [Leiningen](https://github.com/technomancy/leiningen)… the list continues.
+
+What remains unsolved is how to declare and manage system-level dependencies -- external binaries that your application is dependent upon.
+
+<!--
+This post will explore explicitly managing and building system-level dependencies using the [Vulcan](https://github.com/heroku/vulcan) build server.
+-->
+
+## The problem
+
+It's common for an application to shell out to a local executable to perform some computationally intense work where compiled libraries are more performant or robust. Some common examples include [Ghostscript](http://www.ghostscript.com/), which your application might use to manipulate PDF or PostScript files, or [ImageMagick](http://www.imagemagick.org/script/index.php) for resizing and cropping uploaded images.
+
+Many deployment and hosting services attempt to fill this need by providing a set of common binaries bundled into every environment. This is a fragile approach that boxes you in to out-dated or incompatible versions more than it provides the exact version your app needs.
+
+Additionally, having the ability to install system-wide binaries in your deployment environment is a poor solution. It merely shifts the burden of systems management from the service provider to you, the application developer. Without application-level isolation, installing binaries on a remote system still exposes you to dependency hell.
+
+[Twelve-factor](http://www.12factor.net/) makes [the case](http://www.12factor.net/dependencies) to "not rely on the implicit existence of any system tools" for the deleterious effects it may have on future environment migration and upgrade efforts. Instead of solving system dependencies at a system level solve them at the application level by explicitly bundling binaries with the application that requires them.
+
+## Vulcan
+
+Bundling a binary dependency requires that the binary be built specifically for the remote environment's operating system and processor architecture. This is a non-trivial task when you're faced with having to boot up a local host-VM just to simulate the remote server environment. Even then the processor architecture may be in conflict.
+
+A better solution is to use the remote environment of your service provider to compile and build the required dependencies. Such a process would look something like this:
+
+1. Specify the required library's source
+2. Get a remote shell to your production environment
+3. Download the library source in the remote shell
+3. Compile the library remotely
+4. Download the compiled library for use in your application's source-tree
+
+While this process is not a lengthy one, your eye should spot that steps 2-4 are ripe for automation. That's where Vulcan comes in.
+
+[Vulcan](https://github.com/heroku/vulcan) is a utility that bundles and uploads a source-tree to a remote environment, runs the necessary compilation commands on the source tree, and downloads the binary -- all in a single command. Vulcan consists of a Ruby-based CLI and Node.js server component and, though built by and for Heroku, is platform-agnostic.
+
+**IMAGE(s)**
+
+## Setup
+
+<p class="note">
+These steps assume you have <a href="http://git-scm.com/">git</a> and <a href="http://www.ruby-lang.org/en/">ruby</a> available from the command line and have already signed up for a <a href="https://api.heroku.com/signup">Heroku account</a>. The <a href="http://toolbelt.heroku.com/">Heroku Toolbelt</a> can get you up and running if you're missing any components.
+</p>
+
+Installing the Vulcan CLI is simply a matter of installing the `vulcan` gem:
+
+<pre lang="bash"><code>
+$ gem install vulcan
+Please run 'vulcan update' to update your build server.
+Successfully installed vulcan-0.7.1
+1 gem installed
+</code></pre>
+
+Vulcan's [build-server](https://github.com/heroku/vulcan/tree/master/server) is a simple Node.js app that should be running _in the same remote environment your application will be deployed_. If your app runs on Heroku, Vulcan can deploy itself with `vulcan create appname`.
+
+<pre lang="bash"><code>
+$ vulcan create buildserver-you
+Creating buildserver-you... done, stack is cedar
+http://buildserver-you.herokuapp.com/ | git@heroku.com:buildserver-you.git
+Initialized empty Git repository in /private/var/folders/Uz/UzRCgjzkGIi7Iqz9QNi6NUDrHf6/-Tmp-/d20120614-31875-1qjw1d6/.git/
+Counting objects: 883, done.
+...
+
+-----> Heroku receiving push
+-----> Node.js app detected
+...
+       Dependencies installed
+-----> Discovering process types
+       Procfile declares types -> web
+-----> Compiled slug size is 4.1MB
+-----> Launching... done, v3
+       http://buildserver-you.herokuapp.com deployed to Heroku
+</code></pre>
+
+The Vulcan build server is now running on Heroku at `http://buildserver-you.herokuapp.com` as a (free) single-dyno app.
+
+<p class="note" markdown="1">
+If you've manually deployed the build server to another provider you'll need to set its location so the CLI knows where to send build tasks. This is done by [setting](https://github.com/heroku/vulcan/blob/master/lib/vulcan/cli.rb#L40) the `VULCAN_HOST` env var: `$ export VULCAN_HOST=http://myserver.domain.com`
+</p>
+
+## Build
+
+The Ghostscript library was utilized in a tutorial on the [Heroku Dev Center](http://devcenter.heroku.com) for [processing PDF files](https://devcenter.heroku.com/articles/processing-pdfs-ruby-mongo). It makes for a good example of building a binary application dependency.
+
+### Download source
+
+First, download and expand the Linux x86 64-bit source for the [Ghostscript project](http://www.ghostscript.com/). At the time of this writing it is located at [http://downloads.ghostscript.com/public/binaries/ghostscript-9.05-linux-x86_64.tgz](http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz).
+
+<p class="note" markdown="1">
+For the purpose of this article Heroku will be assumed to be the target environment. [Heroku's dynos](https://devcenter.heroku.com/articles/dynos) run on 64-bit Linux kernel. If your target environment differs you will need to select the correct source distribution.
+</p>
+
+<pre lang="bash"><code>
+$ wget http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz
+$ tar -xvzf ghostscript-9.05.tar.gz 
+x ghostscript-9.05/
+x ghostscript-9.05/base/
+x ghostscript-9.05/base/szlibxx.h
+...
+</code></pre>
+
+You now have a Ghostscript source directory at `./ghostscript-9.05`.
+
+### Remote compilation
+
+Next, use the Vulcan CLI to initiate a build task on the build server. This will send the source to the target environment for compilation. The only required argument is `-s`, location of the Ghostscript source directory. The `-v` flag (verbose) will show the output from the compilation process and is recommended as, depending on the library, compilation can take some time and it's useful to see its progress.
+
+<pre lang="bash"><code>
+$ vulcan build -v -s ./ghostscript-9.05
+Packaging local directory... done
+Uploading source package... done
+Building with: ./configure --prefix /app/vendor/ghostscript-9 &amp;&amp; make install
+checking for gcc... gcc
+checking whether the C compiler works... yes
+...
+>> Downloading build artifacts to: /tmp/ghostscript-9.tgz
+   (available at http://buildserver-you.herokuapp.com/output/45380fa6-e02a-479b-a7af-d9afb089b81f)
+</code></pre>
+
+On completion of the build process the resulting binaries are packages and downloaded for you. In this example the binary package can be found locally at `/tmp/ghostscript-9.tgz`. While the binary package is also available on your build server (here at `http://buildserver-you.herokuapp.com/output/45380fa6-e02a-479b-a7af-d9afb089b81f`) this is a temporary location. Due to the ephemeral nature of cloud filesystems the file is likely not to exist at that location for an extended period of time and should not be relied on.
+
+Keep in mind, while the result are the library binaries they will not be executable on your local machine due to the difference in processor architecture of your local and target environments.
+
+<p class="warning" markdown="1">
+Although the [Vulcan source](https://github.com/heroku/vulcan) indicates the ability to fetch source packages directly from a URL (i.e. `$ vulcan build -s http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz` this tends to result in build errors. The most reliable method is to manually download and expand the source before passing to vulcan.
+</p>
+
+## Customization
+
+Looking at the output from the Ghostscript example build you can see that a sensible build command is chosen for you: `./configure --prefix /app/vendor/ghostscript-9 && make install`. If you need to specify a non-default build command you can do so with the `-c` flag. Here is an example adding the `--without-ssl` configure option when building `wget`.
+
+<pre lang="bash"><code>
+$ vulcan build -v -s ./wget-1.13 -c "./configure --prefix /app/vendor/wget-1.13 --without-ssl &amp;&amp; make install" -p /app/vendor/wget-1.13
+Packaging local directory... done
+Uploading source package... done
+Building with: ./configure --without-ssl &amp;&amp; make install
+configure: configuring for GNU Wget 1.13
+...
+>> Downloading build artifacts to: /tmp/wget-1.tgz
+   (available at http://buildserver-you.herokuapp.com/output/66ba3e2b-77ef-4409-acc2-fca70650c318)
+</code></pre>
+
+The `-p` (prefix) flag is also used here to tell Vulcan where to look on the build server for the compiled artifacts (`/app/vendor/wget-1.13`). To avoid ambiguities it's best to specify this value and to set it to the same value as the `--prefix` flag passed to `./configure`.
+
+## Visibility
+
+There are several utilities available to you to introspect the remote compilation process.
+
+### Logging
+
+Outside of using the `-v` flag to force see the build output ou can also use the logs of the Vulcan build server to gain better visibility into the process. Since the Vulcan build server is just a Node.js app running in your target environment this is a trivial task. On Heroku use `heroku logs` and the `-a` flag with the name of your build server app.
+
+<pre lang="bash"><code>
+$ heroku logs -t -a buildserver-you
+2012-07-04T15:29:20+00:00 app[web.1]: [7f3a7510-400a-44d4-9132-66a2e6c878a5] spawning build
+2012-07-04T15:29:20+00:00 app[web.1]: valid socket
+2012-07-04T15:29:21+00:00 heroku[run.1]: Awaiting client
+2012-07-04T15:29:21+00:00 heroku[run.1]: Starting process with command `bin/make "7f3a7510-400a-44d4-9132-66a2e6c878a5"`
+2012-07-04T15:29:22+00:00 heroku[run.1]: State changed from starting to up
+2012-07-04T15:30:10+00:00 heroku[run.1]: Process exited with status 1
+2012-07-04T15:30:10+00:00 heroku[run.1]: State changed from up to complete
+</code></pre>
+
+By default Vulcan will spawn a [on-off dyno](https://devcenter.heroku.com/articles/oneoff-admin-ps) to perform the build command. This is evident by the `run.1` dyno in the log output. In some circumstances this can result in a billable event if your web and one-off dyno usage combined [exceeds 750 hours for any one month](https://devcenter.heroku.com/articles/usage-and-billing).
+
+If this small overage is meaningful to you you can sacrifice compilation concurrency and force Vulcan to execute the compilation command in-process with the `SPAWN_ENV` [config var](https://devcenter.heroku.com/articles/config-vars).
+
+<pre lang="bash"><code>
+$ heroku config:add SPAWN_ENV=local -a buildserver-you
+Setting config vars and restarting buildserver-you... done, v11
+SPAWN_ENV: local
+</code></pre>
+
+The build command will then execute within the web process:
+
+<pre lang="bash"><code>
+$ heroku logs -t -a buildserver-you
+2012-07-04T15:35:43+00:00 app[web.1]: [bbeab2b8-3941-4d41-94af-24c4f0fa65c0] spawning build
+2012-07-04T15:36:33+00:00 app[web.1]: 10.125.41.68 - - [Wed, 04 Jul 2012 15:36:33 GMT] "GET /output/bbeab2b8-3941-4d41-94af-24c4f0fa65c0 HTTP/1.1" 200 - "-" "Ruby"
+2012-07-04T15:36:33+00:00 heroku[router]: GET buildserver-you.herokuapp.com/output/bbeab2b8-3941-4d41-94af-24c4f0fa65c0 dyno=web.1 queue=0 wait=0ms service=35ms status=200 bytes=75
+</code></pre>
+
+While this fails to adhere to the [background job](https://devcenter.heroku.com/articles/background-jobs-queueing) pattern it may be acceptable for your use-case.
+
+### Remote shell
+
+If a build fails it is often useful to be able to view the failed artefacts. Since Vulcan performs its work in temporary directories their contents are cleaned up after each build. However, a remote shell can be used to manually invoke the build command and navigate the build results.
+
+At the start of every build request Vulcan outputs log statements resembling the following:
+
+<pre lang="bash"><code>
+2012-07-04T18:57:10+00:00 app[web.1]: [6869e68a-492d-4a7e-8b27-64352811d7dc] saving to couchdb
+2012-07-04T18:57:10+00:00 app[web.1]: [6869e68a-492d-4a7e-8b27-64352811d7dc] saving attachment - [id:6869e68a-492d-4a7e-8b27-64352811d7dc rev:1-722a96f6734a3511efd73b7cfb9a2aed]
+</code></pre>
+
+The attachment id, here `6869e68a-492d-4a7e-8b27-64352811d7dc`, is all that's needed to manually invoke the build yourself. Establish a remote shell to the Vulcan buildserver environment. On Heroku you can use `heroku run bash`:
+
+<pre lang="bash"><code>
+$ heroku run bash -a buildserver-you
+~ $
+</code></pre>
+
+Then invoke the `bin/make` command with the attachment id. You will see the output of the build process and can then browse the output directory yourself.
+
+<pre lang="bash"><code>
+$ bin/make "6869e68a-492d-4a7e-8b27-64352811d7dc"
+configure: configuring for GNU Wget 1.13
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+...
+$ cd /app/vendor/wget-1.13
+</code></pre>
+
+## Vendoring
+
+## Heroku binaries
+
+Many binaries were compiled in the course of writing this article for use on Heroku. Here is a list in case they're useful to you:
+
+<p class="note" markdown="1">
+If you'd like to list a binary compiled for Heroku here, please send a pull request [for this article]().
+</p>
+
+<table>
+  <tr>
+    <th>Library</th>
+    <th>Source</th>
+    <th>Build command</th>
+    <th>Binary</th>
+  </tr>
+  <tr>
+    <td><a href="http://www.gnu.org/software/wget/">GNU Wget</a> v1.13</td>
+    <td><a href="http://ftp.gnu.org/gnu/wget/wget-1.13.tar.gz">http://ftp.gnu.org/gnu/wget/wget-1.13.tar.gz</a></td>
+    <td><code>vulcan build -v -s ./wget-1.13 -c "./configure --prefix /app/vendor/wget-1.13 --without-ssl && make install" -p /app/vendor/wget-1.13</code>
+/vendor/wget-1.13</td>
+    <td><a href="http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz">http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz</a></td>
+  </tr>
+</table>
+
+#### Notes
+
+
+
+repo of Heroku builds
+
+specify output dir -p /tmp/name w/ configure --prefix (must be writable on dyno)
+
+Update w/ gem install vulcan && vulcan update
+
+If already have buildserver, 
+
+In practice: switch between local dev and remote (using the bin/ env)
+
+[web.1]: [672b5df6-ad8c-49ed-9831-515207e2dc4f] ERROR: invalid secret
+2012-07-04T17:39:47+00:00 app[web.1]: invalid secret
+heroku config -s | grep SECRET
+~/.vulcan
+--- 
+:app: buildserver-you
+:host: buildserver-you.herokuapp.com
+:secret: f575054501266d29eac5fcf9d8811dfb846f2520
+
+
+<!--
+
+## Dependencies
+
+Unlike Ghostscript, many libraries themselves have dependencies that are not available in your target environment. `wget` is a useful utility that requires the [GNU transport layer security library (gnutls)](http://www.gnu.org/software/gnutls/download.html) for SSL connections. To compile wget first compile gnutls.
+
+<p class="note" markdown="1">
+Recent versions of gnutls are [distributed](http://ftp.gnu.org/gnu/gnutls/) with [XZ](http://tukaani.org/xz/) file compression. It will be left as an excercise for the reader to download and decompress the gnutls source.
+</p>
+
+<pre lang="bash"><code>
+$ vulcan build -v -s ./gnutls-3.0.21
+Packaging local directory... done
+Uploading source package... done
+Building with: ./configure --prefix /app/vendor/ghostscript-9 && make install
+checking for gcc... gcc
+checking whether the C compiler works... yes
+...
+</code></pre>
+
+xz compressions: http://tukaani.org/xz/
+
+wget as example, requires gnutils
+
+-->
