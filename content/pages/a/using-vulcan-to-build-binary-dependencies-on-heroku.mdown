@@ -338,7 +338,7 @@ Recent versions of gnutls are [distributed](http://ftp.gnu.org/gnu/gnutls/) with
 $ vulcan build -v -s ./gnutls-3.0.21
 Packaging local directory... done
 Uploading source package... done
-Building with: ./configure --prefix /app/vendor/ghostscript-9 && make install
+Building with: ./configure --prefix /app/vendor/ghostscript-9 &amp;&amp; make install
 checking for gcc... gcc
 checking whether the C compiler works... yes
 ...
