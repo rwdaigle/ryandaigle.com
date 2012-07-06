@@ -2,29 +2,27 @@ Title: Using Vulcan to Build Binary Dependencies for Heroku
 Draft: true
 Date: 15 June, 2012
 
-Managing an application's code dependencies, which was once a source of constant pain and conflict, is now a solved problem in most modern languages. Ruby has [Bundler](http://gembundler.com/), Node.js has [npm](http://npmjs.org/), Python has [pip](http://pypi.python.org/pypi/pip), Clojure has [Leiningen](https://github.com/technomancy/leiningen)… the list continues.
+Managing an application's code dependencies, once a source of constant pain and conflict, is now a solved problem in most modern languages. Ruby has [Bundler](http://gembundler.com/), Node.js has [npm](http://npmjs.org/), Python has [pip](http://pypi.python.org/pypi/pip), Clojure has [Leiningen](https://github.com/technomancy/leiningen)… the list continues.
 
-What remains unsolved is how to declare and manage system-level dependencies -- external binaries that your application is dependent upon.
-
-<!--
-This post will explore explicitly managing and building system-level dependencies using the [Vulcan](https://github.com/heroku/vulcan) build server.
--->
+What remains unsolved is how to declare and manage system-level dependencies -- external binaries on which your application is dependent. This article explores explicitly managing and building system-level dependencies using the [Vulcan](https://github.com/heroku/vulcan) build server.
 
 ## Problem
 
-It's common for an application to shell out to a local executable to perform some computationally intense work where compiled libraries are more performant or robust. Some common examples include [Ghostscript](http://www.ghostscript.com/), which your application might use to manipulate PDF or PostScript files, or [ImageMagick](http://www.imagemagick.org/script/index.php) for resizing and cropping uploaded images.
+It's common for an application to shell out to a local executable to perform some computationally intense work where compiled libraries are more performant or robust. Examples include [Ghostscript](http://www.ghostscript.com/), which your application might use to manipulate PDF or PostScript files and [ImageMagick](http://www.imagemagick.org/script/index.php) for resizing and cropping uploaded images.
 
-Many deployment and hosting services attempt to fill this need by providing a set of common binaries bundled into every environment. This is a fragile approach that boxes you in to out-dated or incompatible versions more than it provides the exact version your app needs.
+Many deployment services attempt to fill this need by providing a set of common binaries bundled into every environment. This is a fragile approach that boxes you in to out-dated or incompatible library versions.
 
-Additionally, having the ability to install system-wide binaries in your deployment environment is a poor solution. It merely shifts the burden of systems management from the service provider to you, the application developer. Without application-level isolation, installing binaries on a remote system still exposes you to dependency hell.
+Having the ability to install system-wide binaries in your deployment environment is also poor solution. It merely shifts the burden of dependency management from the service provider to you, the application developer.
 
-[Twelve-factor](http://www.12factor.net/) makes [the case](http://www.12factor.net/dependencies) to "not rely on the implicit existence of any system tools" for the deleterious effects it may have on future environment migration and upgrade efforts. Instead of solving system dependencies at a system level solve them at the application level by explicitly bundling binaries with the application that requires them.
+[Twelve-factor](http://www.12factor.net/) is firm in [its stance on system-level dependencies](http://www.12factor.net/dependencies) to
+
+> Twelve-factor apps also do not rely on the implicit existence of any system tools... While these tools may exist on many or even most systems, there is no guarantee that they will exist on all systems where the app may run in the future, or whether the version found on a future system will be compatible with the app. If the app needs to shell out to a system tool, that tool should be vendored into the app.
 
 ## Solution
 
-Bundling a binary dependency requires that the binary be built specifically for the remote environment's operating system and processor architecture. This is a non-trivial task when you're faced with having to boot up a local host-VM just to simulate the remote server environment. Even then the processor architecture may be in conflict.
+Vendoring a binary dependency requires that the binary be built specifically for the remote environment's operating system and processor architecture. Even with the benefits of virtual machine software this is a non-trivial task.
 
-A better solution is to use the remote environment of your service provider to compile and build the required dependencies. Such a process would look something like this:
+A better solution is to use the remote environment of your service provider to compile and build the required dependencies. Such a process would roughly adhere to the following steps:
 
 1. Specify the required library's source
 2. Get a remote shell to your production environment
@@ -35,8 +33,6 @@ A better solution is to use the remote environment of your service provider to c
 While this process is not a lengthy one, your eye should spot that steps 2-4 are ripe for automation. That's where Vulcan comes in.
 
 [Vulcan](https://github.com/heroku/vulcan) is a utility that bundles and uploads a source-tree to a remote environment, runs the necessary compilation commands on the source tree, and downloads the binary -- all in a single command. Vulcan consists of a Ruby-based CLI and Node.js server component and, though built by and for Heroku, is platform-agnostic.
-
-**IMAGE(s)**
 
 ## Setup
 
@@ -53,7 +49,7 @@ Successfully installed vulcan-0.7.1
 1 gem installed
 </code></pre>
 
-Vulcan's [build-server](https://github.com/heroku/vulcan/tree/master/server) is a simple Node.js app that should be running _in the same remote environment your application will be deployed_. If your app runs on Heroku, Vulcan can deploy itself with `vulcan create appname`.
+Vulcan's [build-server](https://github.com/heroku/vulcan/tree/master/server) is a simple Node.js app that runs _in the same target environment your application will be deployed_. If your app runs on Heroku, Vulcan can deploy itself to Heroku with `vulcan create appname`.
 
 <pre lang="bash"><code>
 $ vulcan create buildserver-you
@@ -74,15 +70,15 @@ Counting objects: 883, done.
        http://buildserver-you.herokuapp.com deployed to Heroku
 </code></pre>
 
-The Vulcan build server is now running on Heroku at `http://buildserver-you.herokuapp.com` as a (free) single-dyno app.
+The Vulcan build server is now running on Heroku at `http://buildserver-you.herokuapp.com` as a (free) single-dyno app. It's important to note there's nothing blessed about Vulcan running on Heroku. It's just a normal application running in user-space, giving you all the [visibility](#visibility) and management tools you're used to.
 
 <p class="note" markdown="1">
-If you've manually deployed the build server to another provider you'll need to set its location so the CLI knows where to send build tasks. This is done by [setting](https://github.com/heroku/vulcan/blob/master/lib/vulcan/cli.rb#L40) the `VULCAN_HOST` env var: `$ export VULCAN_HOST=http://myserver.domain.com`
+If you've manually deployed the build server to another provider you'll need to set its location so the [CLI knows where to send build tasks](https://github.com/heroku/vulcan/blob/master/lib/vulcan/cli.rb#L40). This is done by setting the `VULCAN_HOST` env var: `$ export VULCAN_HOST=http://myserver.domain.com`..
 </p>
 
 ## Build
 
-The Ghostscript library was utilized in a tutorial on the [Heroku Dev Center](http://devcenter.heroku.com) for [processing PDF files](https://devcenter.heroku.com/articles/processing-pdfs-ruby-mongo). It makes for a good example of building a binary application dependency.
+The Ghostscript library utilized in the [processing PDF files](https://devcenter.heroku.com/articles/processing-pdfs-ruby-mongo) tutorial on the [Heroku Dev Center](http://devcenter.heroku.com) makes for a good example of building a binary application dependency.
 
 ### Download source
 
@@ -105,7 +101,7 @@ You now have a Ghostscript source directory at `./ghostscript-9.05`.
 
 ### Remote compilation
 
-Next, use the Vulcan CLI to initiate a build task on the build server. This will send the source to the target environment for compilation. The only required argument is `-s`, location of the Ghostscript source directory. The `-v` flag (verbose) will show the output from the compilation process and is recommended as, depending on the library, compilation can take some time and it's useful to see its progress.
+Next, use the Vulcan CLI to initiate a build task on the build server with `vulcan build`. This will send the source to the target environment for compilation. The only required argument is `-s`, the location of the Ghostscript source directory. The `-v` flag (verbose) will show the output from the compilation process and is recommended as, depending on the library, compilation can take some time and it's useful to see its progress.
 
 <pre lang="bash"><code>
 $ vulcan build -v -s ./ghostscript-9.05
@@ -124,7 +120,7 @@ On completion of the build process the resulting binaries are packages and downl
 Keep in mind, while the result are the library binaries they will not be executable on your local machine due to the difference in processor architecture of your local and target environments.
 
 <p class="warning" markdown="1">
-Although the [Vulcan source](https://github.com/heroku/vulcan) indicates the ability to fetch source packages directly from a URL (i.e. `$ vulcan build -s http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz` this tends to result in build errors. The most reliable method is to manually download and expand the source before passing to vulcan.
+Although the [Vulcan source](https://github.com/heroku/vulcan) indicates the ability to fetch source packages directly from a URL (i.e. `$ vulcan build -s http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz` this tends to result in build errors. At this time the most reliable method is to manually download and expand the source before passing to vulcan.
 </p>
 
 ## Customization
@@ -150,7 +146,7 @@ There are several utilities available to you to introspect the remote compilatio
 
 ### Logging
 
-Outside of using the `-v` flag to force see the build output ou can also use the logs of the Vulcan build server to gain better visibility into the process. Since the Vulcan build server is just a Node.js app running in your target environment this is a trivial task. On Heroku use `heroku logs` and the `-a` flag with the name of your build server app.
+Outside of using the `-v` flag to force see the build output you can also use the logs of the Vulcan build server to gain better visibility into the process. Since the Vulcan build server is just a Node.js app running in your target environment this is a trivial task. On Heroku use `heroku logs` and the `-a` flag with the name of your build server app.
 
 <pre lang="bash"><code>
 $ heroku logs -t -a buildserver-you
@@ -195,7 +191,7 @@ At the start of every build request Vulcan outputs log statements resembling the
 2012-07-04T18:57:10+00:00 app[web.1]: [6869e68a-492d-4a7e-8b27-64352811d7dc] saving attachment - [id:6869e68a-492d-4a7e-8b27-64352811d7dc rev:1-722a96f6734a3511efd73b7cfb9a2aed]
 </code></pre>
 
-The attachment id, here `6869e68a-492d-4a7e-8b27-64352811d7dc`, is all that's needed to manually invoke the build yourself. Establish a remote shell to the Vulcan buildserver environment. On Heroku you can use `heroku run bash`:
+The attachment id, here `6869e68a-492d-4a7e-8b27-64352811d7dc`, is all that's needed to manually invoke the build yourself. Establish a remote shell to the Vulcan build server environment. On Heroku you can use `heroku run bash`:
 
 <pre lang="bash"><code>
 $ heroku run bash -a buildserver-you
@@ -214,41 +210,6 @@ $ cd /app/vendor/wget-1.13
 </code></pre>
 
 ## Vendoring
-
-## Heroku binaries
-
-Many binaries were compiled in the course of writing this article for use on Heroku. Here is a list in case they're useful to you:
-
-<p class="note" markdown="1">
-If you'd like to list a Heroku binary here, please [send a pull request](https://github.com/rwdaigle/ryandaigle.com/blob/master/content/pages/a/using-vulcan-to-build-binary-dependencies-on-heroku.mdown).
-</p>
-
-<table>
-  <tr>
-    <th>Library</th>
-    <th>Build command</th>
-    <th>Binary</th>
-    <th>Contributor</th>
-  </tr>
-  <tr>
-    <td><a href="http://ftp.gnu.org/gnu/wget/wget-1.13.tar.gz">GNU Wget v1.13</a></td>
-    <td><code>vulcan build -v -s ./wget-1.13 -c "./configure --prefix /app/vendor/wget-1.13 --without-ssl &amp;&amp; make install" -p /app/vendor/wget-1.13</code></td>
-    <td><a href="http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz">download</a></td>
-    <td><a href="https://twitter.com/rwdaigle">Ryan Daigle</a></td>
-  </tr>
-  <tr>
-    <td><a href="http://www.imagemagick.org/download/ImageMagick.tar.gz">ImageMagick v6.7.8-1</a></td>
-    <td><code>vulcan build -v -s ./ImageMagick-6.7.8-1</code></td>
-    <td><a href="http://cl.ly/011m0E3w2I360X2s1D2d/ImageMagick-6.7.tgz">download</a></td>
-    <td><a href="https://twitter.com/rwdaigle">Ryan Daigle</a></td>
-  </tr>
-  <tr>
-    <td><a href="http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz">Ghostscript v9.05</a></td>
-    <td><code>vulcan build -v -s ./ghostscript-9.05</code></td>
-    <td><a href="http://cl.ly/192z2W1H2i1e3o0W341V/ghostscript-9.tgz">download</a></td>
-    <td><a href="https://twitter.com/rwdaigle">Ryan Daigle</a></td>
-  </tr>
-</table>
 
 ## Updates
 
@@ -318,13 +279,48 @@ reallylonghash12df
 Copy your `~/.vulcan` file to each development machine from which you wish to invoke builds.
 </p>
 
+## Heroku binaries
+
+During the course of writing this article the following binaries were compiled for use on Heroku.
+
+<p class="note" markdown="1">
+If you'd like to list a Heroku binary here, please [send a pull request](https://github.com/rwdaigle/ryandaigle.com/blob/master/content/pages/a/using-vulcan-to-build-binary-dependencies-on-heroku.mdown).
+</p>
+
+<table>
+  <tr>
+    <th>Library</th>
+    <th>Build command</th>
+    <th>Binary</th>
+    <th>Contributor</th>
+  </tr>
+  <tr>
+    <td><a href="http://ftp.gnu.org/gnu/wget/wget-1.13.tar.gz">GNU Wget v1.13</a></td>
+    <td><code>vulcan build -v -s ./wget-1.13 -c "./configure --prefix /app/vendor/wget-1.13 --without-ssl &amp;&amp; make install" -p /app/vendor/wget-1.13</code></td>
+    <td><a href="http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz">download</a></td>
+    <td><a href="https://twitter.com/rwdaigle">@rwdaigle</a></td>
+  </tr>
+  <tr>
+    <td><a href="http://www.imagemagick.org/download/ImageMagick.tar.gz">ImageMagick v6.7.8-1</a></td>
+    <td><code>vulcan build -v -s ./ImageMagick-6.7.8-1</code></td>
+    <td><a href="http://cl.ly/011m0E3w2I360X2s1D2d/ImageMagick-6.7.tgz">download</a></td>
+    <td><a href="https://twitter.com/rwdaigle">@rwdaigle</a></td>
+  </tr>
+  <tr>
+    <td><a href="http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz">Ghostscript v9.05</a></td>
+    <td><code>vulcan build -v -s ./ghostscript-9.05</code></td>
+    <td><a href="http://cl.ly/192z2W1H2i1e3o0W341V/ghostscript-9.tgz">download</a></td>
+    <td><a href="https://twitter.com/rwdaigle">@rwdaigle</a></td>
+  </tr>
+</table>
+
 <!--
 
 ## Notes
 
 Vendoring/In practice: switch between local dev and remote (using the bin/ env)
 
-style table
+style table, list, block quote
 
 ## Dependencies
 
