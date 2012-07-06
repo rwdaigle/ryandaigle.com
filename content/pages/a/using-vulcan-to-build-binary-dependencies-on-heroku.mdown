@@ -14,7 +14,7 @@ Many deployment services attempt to fill this need by providing a set of common 
 
 Having the ability to install system-wide binaries in your deployment environment is also poor solution. It merely shifts the burden of dependency management from the service provider to you, the application developer.
 
-[Twelve-factor](http://www.12factor.net/) is firm in [its stance on system-level dependencies](http://www.12factor.net/dependencies) to
+[Twelve-factor](http://www.12factor.net/) is firm in [its stance on system-level dependencies](http://www.12factor.net/dependencies):
 
 > Twelve-factor apps also do not rely on the implicit existence of any system tools... While these tools may exist on many or even most systems, there is no guarantee that they will exist on all systems where the app may run in the future, or whether the version found on a future system will be compatible with the app. If the app needs to shell out to a system tool, that tool should be vendored into the app.
 
