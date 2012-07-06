@@ -140,6 +140,71 @@ configure: configuring for GNU Wget 1.13
 
 The `-p` (prefix) flag is also used here to tell Vulcan where to look on the build server for the compiled artifacts (`/app/vendor/wget-1.13`). To avoid ambiguities it's best to specify this value and to set it to the same value as the `--prefix` flag passed to `./configure`.
 
+## Vendoring
+
+Once you have a binary appropriate for use on Heroku you need to vendor it within your application. Though conventions vary by language the approach they each take is very similar. To vendor the `wget` executable follow these steps.
+
+First, within your application root create a `vendor` directory that will house the `wget` binary and copy in the executable from the vulcan [build results](http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz).
+
+<pre lang="bash"><code>
+$ mkdir -p vendor/wget/bin
+$ cp /tmp/wget-1/bin/wget vendor/wget/bin/
+</code></pre>
+
+The [null buildpack](https://github.com/ryandotsmith/null-buildpack) can be used to test `wget` in isolation. Create a Heroku app that consists only of this `vendor` directory and specify the null buildpack.
+
+<pre lang="bash"><code>
+$ git init
+$ git add .
+$ git commit -m "Vendored wget"
+
+$ heroku create --buildpack https://github.com/ryandotsmith/null-buildpack
+Creating severe-water-5643... done, stack is cedar
+BUILDPACK_URL=https://github.com/ryandotsmith/null-buildpack
+http://severe-water-5643.herokuapp.com/ | git@heroku.com:severe-water-5643.git
+Git remote heroku added
+</code></pre>
+
+Add `vendor/wget/bin` to the app's `PATH` and deploy it to Heroku.
+
+<pre lang="bash"><code>
+$ heroku config:add PATH=vendor/wget/bin:/usr/bin:/bin
+Setting config vars and restarting severe-water-5643... done, v6
+PATH: vendor/wget/bin:/usr/bin:/bin
+
+$ git push heroku master
+...
+-----> Heroku receiving push
+-----> Fetching custom buildpack... done
+-----> Null app detected
+-----> Nothing to do.
+-----> Discovering process types
+       Procfile declares types -> (none)
+-----> Compiled slug size is 172K
+-----> Launching... done, v4
+       http://severe-water-5643.herokuapp.com deployed to Heroku
+
+To git@heroku.com:severe-water-5643.git
+ * [new branch]      master -> master
+</code></pre>
+
+To test that the compiled version of wget works use a one-off dyno to run a test command:
+
+<pre lang="bash"><code>
+$ heroku run wget http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz
+Running `wget http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz` attached to terminal... up, run.1
+...
+Connecting to f.cl.ly (f.cl.ly)|72.21.195.15|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 718774 (702K) [application/gtar]
+Saving to: `wget-1.tgz'
+
+100%[===========================================================>] 718,774     --.-K/s   in 0.08s   
+2012-07-06 19:01:19 (8.25 MB/s) - `wget-1.tgz' saved [718774/718774]
+</code></pre>
+
+The command was successfully invoked on Heroku using the vulcan-compiled `wget` executable and the output was streamed to your local shell.
+
 ## Visibility
 
 There are several utilities available to you to introspect the remote compilation process.
@@ -208,8 +273,6 @@ checking whether build environment is sane... yes
 ...
 $ cd /app/vendor/wget-1.13
 </code></pre>
-
-## Vendoring
 
 ## Updates
 
@@ -313,35 +376,3 @@ If you'd like to list a Heroku binary here, please [send a pull request](https:/
     <td><a href="https://twitter.com/rwdaigle">@rwdaigle</a></td>
   </tr>
 </table>
-
-<!--
-
-## Notes
-
-Vendoring/In practice: switch between local dev and remote (using the bin/ env)
-
-style table, list, block quote
-
-## Dependencies
-
-Unlike Ghostscript, many libraries themselves have dependencies that are not available in your target environment. `wget` is a useful utility that requires the [GNU transport layer security library (gnutls)](http://www.gnu.org/software/gnutls/download.html) for SSL connections. To compile wget first compile gnutls.
-
-<p class="note" markdown="1">
-Recent versions of gnutls are [distributed](http://ftp.gnu.org/gnu/gnutls/) with [XZ](http://tukaani.org/xz/) file compression. It will be left as an excercise for the reader to download and decompress the gnutls source.
-</p>
-
-<pre lang="bash"><code>
-$ vulcan build -v -s ./gnutls-3.0.21
-Packaging local directory... done
-Uploading source package... done
-Building with: ./configure --prefix /app/vendor/ghostscript-9 &amp;&amp; make install
-checking for gcc... gcc
-checking whether the C compiler works... yes
-...
-</code></pre>
-
-xz compressions: http://tukaani.org/xz/
-
-wget as example, requires gnutils
-
--->
