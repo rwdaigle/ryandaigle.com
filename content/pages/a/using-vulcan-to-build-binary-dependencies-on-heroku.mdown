@@ -1,6 +1,5 @@
-Title: Using Vulcan to Build Binary Dependencies for Heroku
-Draft: true
-Date: 15 June, 2012
+Title: Using Vulcan to Build Binary Application Dependencies for Heroku
+Date: 10 July, 2012
 
 Managing an application's code dependencies, once a source of constant pain and conflict, is now a solved problem in most modern languages. Ruby has [Bundler](http://gembundler.com/), Node.js has [npm](http://npmjs.org/), Python has [pip](http://pypi.python.org/pypi/pip), Clojure has [Leiningen](https://github.com/technomancy/leiningen)… the list continues.
 
@@ -20,9 +19,9 @@ Having the ability to install system-wide binaries in your deployment environmen
 
 ## Solution
 
-Vendoring a binary dependency requires that the binary be built specifically for the remote environment's operating system and processor architecture. Even with the benefits of virtual machine software this is a non-trivial task.
+Vendoring a binary dependency requires that the binary be built specifically for the remote environment's operating system and processor architecture. Even with the benefits of virtual machine software this is a non-trivial task for developers.
 
-A better solution is to use the remote environment of your service provider to compile and build the required dependencies. Such a process would roughly adhere to the following steps:
+A better solution is to use the remote environment of your service provider to compile and build the required dependencies. Such a process loosely adheres to the following steps:
 
 1. Specify the required library's source
 2. Get a remote shell to your production environment
@@ -30,17 +29,17 @@ A better solution is to use the remote environment of your service provider to c
 3. Compile the library remotely
 4. Download the compiled library for use in your application's source-tree
 
-While this process is not a lengthy one, your eye should spot that steps 2-4 are ripe for automation. That's where Vulcan comes in.
+While this process is not a lengthy one, your eye should spot that steps 2-5 are ripe for automation. That's where Vulcan comes in.
 
-[Vulcan](https://github.com/heroku/vulcan) is a utility that bundles and uploads a source-tree to a remote environment, runs the necessary compilation commands on the source tree, and downloads the binary -- all in a single command. Vulcan consists of a Ruby-based CLI and Node.js server component and, though built by and for Heroku, is platform-agnostic.
+[Vulcan](https://github.com/heroku/vulcan) is a utility that bundles and uploads a source-tree to a remote environment, runs the necessary compilation commands on the source tree, and downloads the resulting binary -- all in a single command. Vulcan consists of a Ruby-based CLI and Node.js server and, though built by and for Heroku, is platform-agnostic.
 
 ## Setup
+
+Installing the Vulcan CLI is simply a matter of installing the `vulcan` gem:
 
 <p class="note">
 These steps assume you have <a href="http://git-scm.com/">git</a> and <a href="http://www.ruby-lang.org/en/">ruby</a> available from the command line and have already signed up for a <a href="https://api.heroku.com/signup">Heroku account</a>. The <a href="http://toolbelt.heroku.com/">Heroku Toolbelt</a> can get you up and running if you're missing any components.
 </p>
-
-Installing the Vulcan CLI is simply a matter of installing the `vulcan` gem:
 
 <pre lang="bash"><code>
 $ gem install vulcan
@@ -115,9 +114,7 @@ checking whether the C compiler works... yes
    (available at http://buildserver-you.herokuapp.com/output/45380fa6-e02a-479b-a7af-d9afb089b81f)
 </code></pre>
 
-On completion of the build process the resulting binaries are packages and downloaded for you. In this example the binary package can be found locally at `/tmp/ghostscript-9.tgz`. While the binary package is also available on your build server (here at `http://buildserver-you.herokuapp.com/output/45380fa6-e02a-479b-a7af-d9afb089b81f`) this is a temporary location. Due to the ephemeral nature of cloud filesystems the file is likely not to exist at that location for an extended period of time and should not be relied on.
-
-Keep in mind, while the result are the library binaries they will not be executable on your local machine due to the difference in processor architecture of your local and target environments.
+On completion of the build process the resulting binaries are packaged and downloaded for you. In this example the binary package can be found locally at `/tmp/ghostscript-9.tgz` and remotely at `http://buildserver-you.herokuapp.com/output/45380fa6-e02a-479b-a7af-d9afb089b81f`.
 
 <p class="warning" markdown="1">
 Although the [Vulcan source](https://github.com/heroku/vulcan) indicates the ability to fetch source packages directly from a URL (i.e. `$ vulcan build -s http://downloads.ghostscript.com/public/ghostscript-9.05.tar.gz` this tends to result in build errors. At this time the most reliable method is to manually download and expand the source before passing to vulcan.
@@ -125,7 +122,7 @@ Although the [Vulcan source](https://github.com/heroku/vulcan) indicates the abi
 
 ## Customization
 
-Looking at the output from the Ghostscript example build you can see that a sensible build command is chosen for you: `./configure --prefix /app/vendor/ghostscript-9 && make install`. If you need to specify a non-default build command you can do so with the `-c` flag. Here is an example adding the `--without-ssl` configure option when building `wget`.
+Looking at the output from the Ghostscript example you can see that a sensible [autoconf-based](http://en.wikipedia.org/wiki/Autoconf) command is chosen for you: `./configure --prefix /app/vendor/ghostscript-9 && make install`. If you need to specify a non-default build command you can do so with the `-c` flag. Here is an example adding the `--without-ssl` configure option when building `wget`.
 
 <pre lang="bash"><code>
 $ vulcan build -v -s ./wget-1.13 -c "./configure --prefix /app/vendor/wget-1.13 --without-ssl &amp;&amp; make install" -p /app/vendor/wget-1.13
@@ -142,9 +139,9 @@ The `-p` (prefix) flag is also used here to tell Vulcan where to look on the bui
 
 ## Vendoring
 
-Once you have a binary appropriate for use on Heroku you need to vendor it within your application. Though conventions vary by language the approach they each take is very similar. To vendor the `wget` executable follow these steps.
+Once you have a binary appropriate for use on Heroku you need to vendor it within your application. Though conventions vary by language the approach taken is similar across them all. Vendoring the `wget` executable is a straight-forward process.
 
-First, within your application root create a `vendor` directory that will house the `wget` binary and copy in the executable from the vulcan [build results](http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz).
+Create a `vendor` directory that will house the `wget` binary and copy in the executable from the vulcan [build results](http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz).
 
 <pre lang="bash"><code>
 $ mkdir -p vendor/wget/bin
@@ -191,19 +188,19 @@ To git@heroku.com:severe-water-5643.git
 To test that the compiled version of wget works use a one-off dyno to run a test command:
 
 <pre lang="bash"><code>
-$ heroku run wget http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz
-Running `wget http://cl.ly/1B0n121X1T200g3u2a1k/wget-1.tgz` attached to terminal... up, run.1
+$ heroku run wget http://www.google.com/images/logo_sm.gif
+Running wget http://www.google.com/images/logo_sm.gif attached to terminal... up, run.1
 ...
-Connecting to f.cl.ly (f.cl.ly)|72.21.195.15|:80... connected.
 HTTP request sent, awaiting response... 200 OK
-Length: 718774 (702K) [application/gtar]
-Saving to: `wget-1.tgz'
+Length: 3972 (3.9K) [image/gif]
+Saving to: 'logo_sm.gif'
 
-100%[===========================================================>] 718,774     --.-K/s   in 0.08s   
-2012-07-06 19:01:19 (8.25 MB/s) - `wget-1.tgz' saved [718774/718774]
+100%[=============================================================>] 3,972       --.-K/s   in 0s
+
+2012-07-10 14:48:48 (200 MB/s) - 'logo_sm.gif' saved [3972/3972]
 </code></pre>
 
-The command was successfully invoked on Heroku using the vulcan-compiled `wget` executable and the output was streamed to your local shell.
+The command was successfully invoked on Heroku using the vulcan-compiled `wget` executable and the output (but not the fetched file) was streamed to your local shell.
 
 ## Visibility
 
@@ -276,7 +273,7 @@ $ cd /app/vendor/wget-1.13
 
 ## Updates
 
-Updating Vulcan is quite simple. Update the CLI using ruby gems:
+Updating Vulcan is simple. Update the CLI using ruby gems:
 
 <pre lang="bash"><code>
 $ gem install vulcan
