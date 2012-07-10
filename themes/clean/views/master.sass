@@ -1,0 +1,273 @@
+$dark-grey: #999
+$light-grey: #CCC
+$font-size: 14px
+$small-font-size: 12px
+$tiny-font-size: 11px
+$meta-font-family: Courier
+
+.container
+  width: 720px
+  font-size: $font-size
+
+.header
+
+  h1
+    font-size: 22px
+    /* border-bottom: 2px solid #EEE */
+    padding: 10px 0 5px 0
+    margin: 30px 75px 30px 0
+    color: #111
+
+  .nav
+    margin-top: -60px
+    float: right
+
+    a
+      color: #A00
+
+.home .nav
+  display: none
+
+ol.index
+  list-style-type: none
+  margin: 25px 0 25px 1px
+
+  li
+    line-height: 22px
+
+
+  .header, .arrow
+    color: $dark-grey
+    font-family: $meta-font-family
+    font-size: $small-font-size
+    vertical-align: top
+
+  .header
+    float: left
+    min-width: 115px
+
+  .arrow
+    margin: 0 5px
+
+  .main
+    font-size: $font-size
+    color: $light-grey
+    margin: 0 0 0 10px
+    display: inline-block
+    max-width: 55%
+    line-height: 1.3em
+
+  .meta
+    float: right
+    color: $light-grey
+    font-size: $small-font-size
+    vertical-align: top
+
+    a
+      color: $light-grey
+      font-size: $tiny-font-size
+
+.article
+  
+  h2
+    font-size: 19px
+    color: #333
+  
+  h3
+    font-size: 16px
+    color: #555
+    padding-bottom: 4px
+  
+  h4
+    font-size: 15px
+    color: #444
+
+  p
+    font-size: $font-size
+    line-height: 1.5em
+    letter-spacing: 1px
+    margin-bottom: 20px
+
+  code
+    color: #666
+
+  img
+    padding: 10px
+    border: 1px solid #DDD
+
+  ul, ol
+    margin-bottom: 20px
+
+    li
+      line-height: 20px
+
+  table
+    margin-bottom: 20px
+    font-size: $small-font-size
+
+    tr th
+      background: #f1f1f1
+      border: 1px solid #e5e5e5
+      color: #999
+      padding: 4px
+      text-align: center
+      font-weight: normal
+
+    tr td
+      border: 1px solid #e5e5e5
+      color: #999
+      padding: 4px
+      text-align: left
+
+  blockquote
+    margin: 0 0 18px
+    border-left: 5px solid #eeeeee
+
+    p
+      margin-bottom: 0
+      font-weight: 300
+      line-height: 22.5px
+      font-style: italic
+      letter-spacing: 0.1em
+      color: $dark-grey
+
+  .date
+    color: $light-grey
+    margin: -5px 0 15px
+    font-family: $meta-font-family
+
+  .toc
+
+    margin: -40px 0px 0px -330px
+    float: left
+    text-align: right
+    width: 275px
+    font-size: 12px
+    position: fixed
+
+    h1
+      font-size: $font-size
+      color: $light-grey
+      font-weight: normal
+      margin-bottom: 5px
+
+    li
+      list-style: none
+      line-height: 18px
+
+    a
+      color: $light-grey
+
+    a:hover
+      color: $dark-grey
+
+  .note
+    background: #F0F5F9
+    border: 1px solid #D0DBE6
+    -moz-border-radius: 3px
+    -webkit-border-radius: 3px
+    border-radius: 3px
+    color: #777
+    margin: 30px 15px
+    padding: 10px 20px 10px 20px
+    letter-spacing: normal
+    line-height: 1.5em
+
+    a
+      color: #08A
+
+  .warning
+    background: #FFF3D0
+    border: 1px solid #FFF400
+    -moz-border-radius: 3px
+    -webkit-border-radius: 3px
+    border-radius: 3px
+    color: #777
+    margin: 30px 15px
+    padding: 10px 20px 10px 20px
+    letter-spacing: normal
+    line-height: 1.5em
+
+    a
+      color: #08A
+
+  .author
+    color: $light-grey
+    margin: 20px 0 30px
+    float: right
+    font-family: $meta-font-family
+
+    img
+      vertical-align: middle
+      border: 0px
+      padding: 0px
+
+    a
+      color: $light-grey
+
+      img
+        opacity: 0.4
+
+    a:hover
+      text-decoration: none
+      color: $dark-grey
+
+      img
+        opacity: 0.75
+
+  .file
+    color: #BBB
+    /* border-bottom: 1px dotted #EEE */
+    margin-bottom: -22px
+    text-align: right
+    margin-right: 8px
+    font-weight: normal
+
+  .comments
+    margin: 60px 0 20px 0
+
+    #disqus_thread
+      #dsq-like-tooltip, #dsq-sort-by, #dsq-pagination, h3
+        display: none
+
+    #dsq-content
+      .dsq-avatar img
+        width: 24px
+        height: 24px
+
+  .highlight
+    padding: 10px 10px 10px 15px
+    -webkit-border-radius: 3px
+    -moz-border-radius: 3px
+    border-radius: 3px
+    margin-bottom: 30px
+
+    pre
+      background: inherit
+      border: 0px
+      margin: 0px
+      padding: 0px
+
+footer
+  border-top: 2px solid #EEE
+  padding: 10px 0 5px 0
+  margin: 40px 0 60px 0
+  font-size: $tiny-font-size
+
+  li
+    line-height: 20px
+
+  img
+    opacity: 0.8
+
+  img:hover
+    opacity: 1
+
+.left
+  float: left
+
+.right
+  float: right
+
+.clear
+  clear: both
