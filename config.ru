@@ -34,9 +34,9 @@ use Rack::Rewrite do
   # http://ryandaigle.com/archives/2007/10
   r301 %r{/archives/(\d{4})/(\d+)}, 'http://archives.ryandaigle.com/archives/$1/$2'
 
-  r301 %r{/articles.xml(\?.*)?}, 'http://feeds.feedburner.com/RyansScraps', :if => Proc.new { |rack_env|
-    ENV['RACK_ENV'] == 'production' && rack_env['HTTP_USER_AGENT'] !~ /FeedBurner/
-  }
+  # r301 %r{/articles.xml(\?.*)?}, 'http://feeds.feedburner.com/RyansScraps', :if => Proc.new { |rack_env|
+  #   ENV['RACK_ENV'] == 'production' && rack_env['HTTP_USER_AGENT'] !~ /FeedBurner/
+  # }
 end
 
 require 'nesta/env'
