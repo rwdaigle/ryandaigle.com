@@ -1,6 +1,5 @@
 Title: Five Interesting Things You Can Do with Heroku Buildpacks
 Draft: true
-Date: 15 August, 2012
 
 * static content
 * Deploy elsewhere
