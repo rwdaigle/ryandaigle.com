@@ -1,4 +1,4 @@
-Title: Using `heroku pg:transfer` to Migrate Heroku Databases
+Title: Using `heroku pg:transfer` to Migrate Postgres Databases
 Date: 18 September, 2012
 
 Development of most applications takes place in several disparate environments with the most common pattern being dev-staging-production. While it's necessary for the source versions in each environment to differ it is quite useful to retain some level of data synchronicity between the environments (for example, to populate your local database with production data to diagnose a bug).
@@ -94,4 +94,20 @@ pg_dump: reading user-defined tables
 
 Here the `heroku config:get` command is used to fetch the full PG connection info for the target app.
 
-The Heroku `pg:transfer` CLI plugin is a much more stable and flexible tool for migrating data between Postgres databases than the Taps gem and the corresponding `db:pull` or `db:push` commands. Use it in concert with a local Postgres database to manage your data transfer needs.
+## Outside Heroku
+
+Somewhat un-intuitively for a Heroku CLI plugin, you can also use `pg:transfer` to transfer data between two databases that are not associated with Heroku. Since the plugin accepts raw connection URLs for both the `--from` and the `--to` locations you're really not limited in how you use the feature.
+
+As Postgres' fame grows more and more platforms are supporting the database. Transferring data between [Engine Yard Postgres databases](http://www.engineyard.com/blog/2012/postgresql-is-our-new-default/), between dbs on EY and Heroku, or from EY to your local database is simple. Though you need the `heroku` command on your path it's really quite agnostic.
+
+To transfer from EY PG to your local database at the env var `DATABASE_URL`:
+
+<pre lang="bash"><code>
+$ heroku pg:transfer --from "postgres://deploy:password@127.0.0.1:5433/dbname" --to $DATABASE_URL
+</code></pre>
+
+<p class="note" markdown="1">
+To gain ingress to an EY Postgres database, follow the [SSH tunnel instructions here](https://support.cloud.engineyard.com/entries/21009887-access-your-database-remotely-through-an-ssh-tunnel). Hence the local `127.0.0.1` connection URL in this example.
+</p>
+
+The Heroku `pg:transfer` CLI plugin is a much more stable and flexible tool for migrating data between Postgres databases than the Taps gem and the corresponding `db:pull` or `db:push` commands. Use it to robustly manage data transfer between Postgres databases.
