@@ -50,6 +50,10 @@ Successfully installed vulcan-0.7.1
 
 Vulcan's [build-server](https://github.com/heroku/vulcan/tree/master/server) is a simple Node.js app that runs _in the same target environment your application will be deployed_. If your app runs on Heroku, Vulcan can deploy itself to Heroku with `vulcan create appname`.
 
+<p class="warning" markdown="1">
+You will need a [verified Heroku account](https://devcenter.heroku.com/articles/account-verification) before running this command as Vulcan requires the use of a (free) add-on.
+</p>
+
 <pre lang="bash"><code>
 $ vulcan create buildserver-you
 Creating buildserver-you... done, stack is cedar
