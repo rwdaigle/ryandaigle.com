@@ -70,7 +70,7 @@ Additionally, if files/content are the focus, they should be a first-class citiz
 
 Some miscellaneous features I was hoping would be added in the new Gist include:
 
-* A resurrection of comment notifications! [Gisted](https://gistedapp.herokuapp.com) will do this for you, but it really should be a supported feature.
+* A resurrection of comment notifications! [Gisted](https://gistedapp.herokuapp.com) will do this for you, but it really should be a natively supported feature.
 * Markdown rendering parity with Github proper. If you look at your [standard project README](https://github.com/rwdaigle/miyagi#miyagi) on Github you'll notice section links. While minor, it's very useful and indicative of the separate paths of development that markdown on Github has features that Gist doesn't yet. Markdown is such a core feature of text-based collaboration that parity here is essential.
 * A de-emphasis of the public gist-stream (now called "Discover Gists"). I just don't see the value of randomly browsing new gists and think that real estate could be better used.
 
@@ -82,7 +82,7 @@ I would encourage Github to focus of the main uses of Gist. From my perspective,
 
 I suspect we'll see the pace of development on Gist quicken now that a new codebase is in place. Removing technical debt often removes roadblocks that may have prevented a product from evolving. I can only hope if I revisit this post several months from now I'll have to significantly edit some of my more critical points.
 
-Github has been incredibly supportive in my use of the [Gist API](http://developer.github.com/v3/gists/) and has my work with them on this front only reinforces their developer-focused reputation. They'll get Gist right, it's just a matter of time.
+Github has been incredibly supportive in my use of the [Gist API](http://developer.github.com/v3/gists/) and my work with them on this front only reinforces their developer-focused reputation. They'll get Gist right, it's just a matter of time.
 
 <p class="note" markdown="1">
 Given my dependence on Gist for work I have a vested interest in its success. Any critical points made here were done so only in hopes of seeing it evolve into a better product.
