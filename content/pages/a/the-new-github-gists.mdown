@@ -71,7 +71,7 @@ Additionally, if files/content are the focus, they should be a first-class citiz
 Some miscellaneous features I was hoping would be added in the new Gist include:
 
 * A resurrection of comment notifications! [Gisted](https://gistedapp.herokuapp.com) will do this for you, but it really should be a natively supported feature.
-* Markdown rendering parity with Github proper. If you look at your [standard project README](https://github.com/rwdaigle/miyagi#miyagi) on Github you'll notice section links. While minor, it's very useful and indicative of the separate paths of development that markdown on Github has features that Gist doesn't yet. Markdown is such a core feature of text-based collaboration that parity here is essential.
+* Markdown editing and rendering parity with Github proper. If you look at your [standard project README](https://github.com/rwdaigle/miyagi#miyagi) on Github you'll notice you can edit the Markdown inline with decent highlighting, preview your content and, when rendered, sections are automatically anchored. Markdown is such a core feature of text-based collaboration that parity here is essential.
 * A de-emphasis of the public gist-stream (now called "Discover Gists"). I just don't see the value of randomly browsing new gists and think that real estate could be better used.
 
 ## Summary
