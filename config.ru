@@ -27,6 +27,12 @@ use Rack::CommonLogger
 
 use Rack::Rewrite do
 
+  # Heroku posts moved to HOHeroku
+  ['cloudflare-dns-heroku', 'pgtransfer-is-the-new-taps', 'using-vulcan-to-build-binary-dependencies-on-heroku',
+    'deploying-nesta-cms-blog-heroku-cedar-pygments-syntax-highlighting'].each do |hoh_slug|
+    r301 %r{/a/#{hoh_slug}}, "http://www.higherorderheroku.com/articles/#{hoh_slug}/"
+  end
+
   # Old ryan's scraps URLs
   # http://ryandaigle.com/articles/2009/8/6/what-s-new-in-edge-rails-cleaner-restful-controllers-w-respond_with
   r301 %r{/articles/(\d{4})/(\d+)/(\d+)/(.+)}, 'http://archives.ryandaigle.com/articles/$1/$2/$3/$4'
