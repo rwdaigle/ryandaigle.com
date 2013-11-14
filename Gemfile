@@ -12,4 +12,5 @@ gem 'maruku'
 
 group :production do
   gem 'newrelic_rpm'
+  gem 'memcachier'
 end
