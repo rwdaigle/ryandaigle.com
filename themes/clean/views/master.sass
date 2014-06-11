@@ -12,7 +12,7 @@ $meta-font-family: Courier
 .header
 
   h1
-    font-size: 22px
+    font-size: 24px
     /* border-bottom: 2px solid #EEE */
     padding: 10px 0 5px 0
     margin: 30px 75px 30px 0
@@ -25,12 +25,20 @@ $meta-font-family: Courier
     a
       color: #A00
 
+h2
+  font-size: 20px
+  /* border-bottom: 2px solid #EEE */
+  padding: 10px 0 5px 0
+  margin: 10px 25px 10px 0
+  color: #333
+
 .home .nav
   display: none
 
 ol.index
+
   list-style-type: none
-  margin: 25px 0 25px 1px
+  margin: 5px 0 5px 1px
 
   li
     line-height: 22px
@@ -57,6 +65,12 @@ ol.index
     max-width: 55%
     line-height: 1.3em
 
+    .reference
+      color: $light-grey
+
+      a
+        color: $dark-grey
+
   .meta
     float: right
     color: $light-grey
@@ -67,17 +81,22 @@ ol.index
       color: $light-grey
       font-size: $tiny-font-size
 
+ol.index.articles
+
+  .main
+    max-width: 90%
+
 .article
-  
+
   h2
     font-size: 19px
     color: #333
-  
+
   h3
     font-size: 16px
     color: #555
     padding-bottom: 4px
-  
+
   h4
     font-size: 15px
     color: #444

@@ -1,7 +1,13 @@
 Template: home
 
-%ol.index
-  - latest_articles(15).each do |article|
+.bio
+  Ryan works at
+  %a(href="http://spreedly.com") Spreedly
+  where he designs, develops and documents payment processing systems.
+
+%h2 Posts
+%ol.index.posts
+  - latest_articles(10).each do |article|
     %li
       %span.header= format_date(article.date)
       %span.arrow &raquo;
@@ -9,6 +15,49 @@ Template: home
         %a(href="#{article.abspath}")= article.title || article.heading
       %span.meta
         %a(href="#{article.abspath}#disqus_thread")
+
+%h2 Elsewhere
+%ol.index.articles
+  %li
+    %span.header 24 April 2013
+    %span.arrow &raquo;
+    %span.main
+      %a(href="https://devcenter.heroku.com/articles/increasing-application-performance-with-http-cache-headers") Increasing Application Performance with HTTP Cache Headers
+      %span.reference
+        on
+        %a(href="https://devcenter.heroku.com") The Heroku Devcenter
+  %li
+    %span.header 28 February 2013
+    %span.arrow &raquo;
+    %span.main
+      %a(href="http://www.miyagijournal.com/articles/five-steps-application-logging/") 5 Steps to Better Application Logging
+      %span.reference
+        on
+        %a(href="http://www.miyagijournal.com/") The Miyagi Journal
+  %li
+    %span.header 09 November 2012
+    %span.arrow &raquo;
+    %span.main
+      %a(href="http://www.higherorderheroku.com/articles/cloudflare-dns-heroku/") Configuring CloudFlare DNS for a Heroku App
+      %span.reference
+        on
+        %a(href="http://www.higherorderheroku.com/") Higher Order Heroku
+  %li
+    %span.header 10 July 2012
+    %span.arrow &raquo;
+    %span.main
+      %a(href="http://www.higherorderheroku.com/articles/using-vulcan-to-build-binary-dependencies-on-heroku/") Building Dependency Binaries for Heroku Applications
+      %span.reference
+        on
+        %a(href="http://www.higherorderheroku.com/") Higher Order Heroku
+  %li
+    %span.header 2006 - 2010
+    %span.arrow &raquo;
+    %span.main
+      %a(href="http://archives.ryandaigle.com/tags/Edge%20Rails") What's New in Edge Rails
+      %span.reference
+        on
+        %a(href="http://archives.ryandaigle.com") the old ryandaigle.com
 
 :javascript
   var disqus_shortname = '#{Nesta::Config.disqus_short_name}';
