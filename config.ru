@@ -16,8 +16,8 @@ use Rack::Cache,
   :allow_reload => true,
   :allow_revalidate => true,
   :private_headers => [],
-  :metastore   => "memcached://#{ENV['MEMCACHE_SERVERS'] || 'localhost:11211'}/meta",
-  :entitystore => "file:tmp/cache/rack/body"
+  :metastore   => "heap:/",
+  :entitystore => "heap:/"
 
 use Rack::ResponseHeaders do |headers|
   headers['Cache-Control'] = "public, max-age=#{ttl}"
