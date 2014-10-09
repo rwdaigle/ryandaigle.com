@@ -1,0 +1,70 @@
+Title: Exposing a Javascript API in a Web Page with Browserify
+Date: October 9, 2014
+
+When using Browserify to build and resolve your javascript library dependencies, it's very easy to get a resulting `bundle.js` file that you can include in a browser with a simple script tag.
+
+<pre><code lang="html">
+&lt;script src="/assets/bundle.js">&lt;/script>
+</code></pre>
+
+Including the bundle in this way will execute the code in your entrypoint (often `main.js`) which is where most online tutorials end and which might be all you need. However, how do you create a bundle that will expose an API to the including page? So you can do something like:
+
+<pre><code lang="html">
+&lt;script src="/assets/bundle.js">&lt;/script>
+&lt;script>
+var lib = new MyLibrary();
+&lt;/script>
+</code></pre>
+
+You need to specify the `standalone` option to the browserify command (or API), which will export the API you expose in your entrypoint file in the given namespace. Here's an example.
+
+Given a library file where your main library functionality is defined:
+
+<div class="file">lib.js</div>
+<pre><code lang="javascript">
+var _ = require('underscore');
+
+module.exports = MyLibrary;
+
+function MyLibrary() {
+  this.aSetting = true;
+};
+
+MyLibrary.prototype.doWork = function() {
+  console.log(this.aSetting);
+}
+</code></pre>
+
+And your browserify entrypoint which exposes your library API:
+
+<div class="file">main.js</div>
+<pre><code lang="javascript">
+module.exports = require('./lib')
+</code></pre>
+
+At this point, if you were to build a bundle with browserify and include it in a web page, you wouldn't be able to access `MyLibrary`. Since browserify makes sure everything is local scoped, and the web page doesn't know how to deal with your top level export, it's effectively hidden. The solution is to tell browserify to expose your exports with the `standalone` option.
+
+As a command it looks like this:
+
+<pre><code lang="shell">
+$ browserify main.js --standalone MyLibrary > bundle.js
+</code></pre>
+
+And if you're using Gulp or similar the API options looks like:
+
+<pre><code lang="javascript">
+browserify('./main.js', {
+  standalone: 'MyLibrary'
+})
+</code></pre>
+
+With this resulting bundle you can now reference `MyLibrary` from the including html page.
+
+<div class="file">index.html</div>
+<pre><code lang="html">
+&lt;script src="/assets/bundle.js">&lt;/script>
+&lt;script>
+var lib = new MyLibrary();
+lib.doWork();
+&lt;/script>
+</code></pre>
